@@ -55,9 +55,10 @@ async def _make_request_with_retries(client, url, max_retries=3):
                             'status_code': response.status_code
                         }
             else:
+
                 return {
                     'case': 'Unsuccessful request',
-                    'response_text': response.text[:500],
+                    'response': response.json(),
                     'status_code': response.status_code,
                     'message': f"Request to '{url}' failed with status {response.status_code}",
                     'attempt': attempt

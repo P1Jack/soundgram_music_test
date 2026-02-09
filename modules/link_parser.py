@@ -1,8 +1,6 @@
-import time
 import re
 
 import YMAPI_requester
-import json_manager
 
 
 async def parse_link(playlist_link: str) -> dict:
@@ -24,6 +22,12 @@ async def parse_link(playlist_link: str) -> dict:
                 'message': f"The link '{playlist_link}' doesn't match any pattern. Please send valid link"
             }
 
+    if response['case'] == 'Unsuccessful request':
+        if response['response'].get('message', "") == "Not Found":
+            return {
+                'case': 'Not found',
+                'message': 'Playlist was not found. Please make sure link is right'
+            }
     if response['case'] != 'Successful request':
         #  logging
         return {
@@ -32,7 +36,14 @@ async def parse_link(playlist_link: str) -> dict:
         }
 
     playlist_data = response["data"]
-    normalized_playlist_data = _normalize_playlist_data(playlist_data, url_type)
+    try:
+        normalized_playlist_data = _normalize_playlist_data(playlist_data, url_type)
+    except Exception as e:
+        print(f"Unexpected error '{e}' occured while normalizing playlist data")
+        return {
+            'case': 'normalization error',
+            'message': 'Playlist parsing was unsuccessful. Probably YM response structure changed.'
+        }
 
     #  проверить нормализованный плейлист
 
