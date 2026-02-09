@@ -2,7 +2,7 @@ import json
 
 
 def get_session_id():
-    with open('config.json', 'r') as read_file:
+    with open('config/config.json', 'r') as read_file:
         session_id = json.load(read_file)["YMAPI"]["session_id"]
 
     return session_id

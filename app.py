@@ -1,11 +1,44 @@
-from fastapi import FastAPI, Response
 import json
+import logging
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, Response
+
+import modules.link_parser as link_parser
 
 
-import link_parser
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("logs/app.log"),
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger(__name__)
 
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan():
+    logger.info("Starting FastAPI application")
+    yield
+    logger.info("Shutting down FastAPI application")
+
+
+app = FastAPI(
+    title="Soundgram_YM_parser"
+)
+
+
+@app.middleware("http")
+async def log_requests(request, call_next):
+    logger.info(f"Request: {request.method} {request.url.path}")
+
+    response = await call_next(request)
+
+    logger.info(f"Response: {response.status_code}")
+    return response
 
 
 @app.get('/')
@@ -26,4 +59,3 @@ async def get_playlist_info(playlist_link: str):
         content=json_parser_response,
         media_type="application/json; charset=utf-8"
     )
-

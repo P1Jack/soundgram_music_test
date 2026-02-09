@@ -4,7 +4,7 @@ import json
 import httpx
 import asyncio
 
-import json_manager
+import modules.json_manager as json_manager
 
 
 async def request_data(url_type: str, **params) -> dict:
