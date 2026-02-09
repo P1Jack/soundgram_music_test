@@ -20,7 +20,6 @@ async def root():
 @app.get('/get_playlist_info/{playlist_link:path}')
 async def get_playlist_info(playlist_link: str):
     playlist_data = await link_parser.parse_link(playlist_link)
-    print(playlist_data)
     json_playlist_data = json.dumps(playlist_data, ensure_ascii=False, indent=4)
 
     return Response(

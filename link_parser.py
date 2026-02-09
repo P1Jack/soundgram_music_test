@@ -32,31 +32,34 @@ async def parse_link(playlist_link: str) -> dict:
         }
 
     playlist_data = response["data"]
+    # json_manager.write_json(playlist_data)
     if url_type == 'old':
-        normalized_playlist_data = normalize_playlist_data(playlist_data["playlist"])
+        normalized_playlist_data = _normalize_playlist_data(playlist_data["playlist"], 'old')
     else:
-        normalized_playlist_data = normalize_playlist_data(playlist_data["result"])
+        normalized_playlist_data = _normalize_playlist_data(playlist_data["result"], 'new')
 
     #  проверить нормализованный плейлист
 
-    json_manager.write_json(normalized_playlist_data)
+    # json_manager.write_json(normalized_playlist_data)
     return normalized_playlist_data
 
 
-def normalize_playlist_data(playlist_data: dict) -> dict:
+def _normalize_playlist_data(playlist_data: dict, playlist_type) -> dict:
     normalized_playlist_data = {
         "playlist_name": playlist_data.get("title", "")
     }
     tracks = []
 
     for track in playlist_data.get("tracks", []):
+        if playlist_type == 'new':
+            track = track.get("track", {})
         normalized_track = {
-            "title": track["title"],
-            "cover_uri": track["coverUri"]
+            "title": track.get("title", ""),
+            "cover_uri": track.get("coverUri", "")
         }
 
         try:
-            iframe = generate_track_iframe(track)
+            iframe = _generate_track_iframe(track)
         except ValueError:
             # logging
             iframe = ''
@@ -74,7 +77,7 @@ def normalize_playlist_data(playlist_data: dict) -> dict:
     return normalized_playlist_data
 
 
-def generate_track_iframe(track_data: dict, width: int = 614, height: int = 244) -> str:
+def _generate_track_iframe(track_data: dict, width: int = 614, height: int = 244) -> str:
     track_id = track_data.get('id') or track_data.get('realId')
     if not track_id:
         raise ValueError("Track ID was not found")
@@ -87,9 +90,9 @@ def generate_track_iframe(track_data: dict, width: int = 614, height: int = 244)
     if not album_id:
         raise ValueError("Album ID was not found")
 
-    track_title = track_data.get('title', '')
-    if not track_title:
-        raise ValueError("Track title was not found")
+    # track_title = track_data.get('title', '')
+    # if not track_title:
+    #     raise ValueError("Track title was not found")
 
     # artists = track_data.get('artists', [])
     # artist_name = artists[0].get('name', '') if artists else ''
