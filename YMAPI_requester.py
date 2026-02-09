@@ -27,12 +27,12 @@ async def request_data(url_type: str, **params) -> dict:
         return await _make_request_with_retries(client, url)
 
 
-async def _make_request_with_retries(client, url, max_retries=2):
+async def _make_request_with_retries(client, url, max_retries=3):
 
     for attempt in range(max_retries + 1):
         try:
             if attempt > 0:
-                await asyncio.sleep(6)
+                await asyncio.sleep(10)
 
             response = await client.get(url)
 

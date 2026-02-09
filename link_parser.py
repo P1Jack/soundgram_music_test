@@ -32,19 +32,16 @@ async def parse_link(playlist_link: str) -> dict:
         }
 
     playlist_data = response["data"]
-    # json_manager.write_json(playlist_data)
-    if url_type == 'old':
-        normalized_playlist_data = _normalize_playlist_data(playlist_data["playlist"], 'old')
-    else:
-        normalized_playlist_data = _normalize_playlist_data(playlist_data["result"], 'new')
+    normalized_playlist_data = _normalize_playlist_data(playlist_data, url_type)
 
     #  проверить нормализованный плейлист
 
-    # json_manager.write_json(normalized_playlist_data)
     return normalized_playlist_data
 
 
 def _normalize_playlist_data(playlist_data: dict, playlist_type) -> dict:
+    playlist_data = playlist_data["playlist" if playlist_type == 'old' else "result"]
+
     normalized_playlist_data = {
         "playlist_name": playlist_data.get("title", "")
     }
