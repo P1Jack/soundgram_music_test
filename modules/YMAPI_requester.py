@@ -1,10 +1,13 @@
-import traceback
 import json
+import logging
 
 import httpx
 import asyncio
 
 import modules.json_manager as json_manager
+
+
+logger = logging.getLogger(__name__)
 
 
 async def request_data(url_type: str, **params) -> dict:
@@ -28,34 +31,43 @@ async def request_data(url_type: str, **params) -> dict:
 
 
 async def _make_request_with_retries(client, url, max_retries=3):
+    logger.debug(f"Data requesting with retries from '{url}' started")
 
-    for attempt in range(max_retries + 1):
+    for attempt in range(1, max_retries + 2):
+        logger.debug(f"Attempt #{attempt} started")
         try:
-            if attempt > 0:
+            if attempt > 1:
                 await asyncio.sleep(10)
+                logger.debug("Retrying")
 
             response = await client.get(url)
 
             if response.status_code == 200:
+                logger.debug("Successful GET-request to YandexMusic")
                 try:
                     data = response.json()
+                    logger.debug("Received data is correct. Exiting the function")
                     return {
                         'case': 'Successful request',
                         'data': data,
                         'attempt': attempt
                     }
-                except json.decoder.JSONDecodeError as error:
+                except json.decoder.JSONDecodeError:
+                    logger.exception(f"JSONDecodeError occured:")
+
                     if attempt < max_retries:
+                        logger.debug(f"Going for next attempt")
                         continue
                     else:
+                        logger.error(f"Request failed after {attempt} attempts due to JSONDecodeError")
                         return {
                             'case': 'JSON decode error',
-                            'message': f'Failed to parse JSON after {max_retries + 1} attempts',
+                            'message': f'Failed to parse JSON after {attempt} attempts',
                             'response_text': response.text[:500],
                             'status_code': response.status_code
                         }
             else:
-
+                logger.warning(f"Unsuccessful request to {url}. Response: {response.json()}")
                 return {
                     'case': 'Unsuccessful request',
                     'response': response.json(),
@@ -65,12 +77,14 @@ async def _make_request_with_retries(client, url, max_retries=3):
                 }
 
         except httpx.TimeoutException:
+            logger.exception(f"httpx.TimeoutException occurred while requesting {url}:")
             return {
                 'case': 'Timeout exception',
                 'message': f"Timeout error occurred while requesting '{url}'",
                 'attempt': attempt
             }
         except httpx.HTTPError as error:
+            logger.exception(f"httpx.HTTPError occurred while requesting {url}:")
             return {
                 'case': 'HTTPError exception',
                 'message': f"HTTPError error occurred while requesting '{url}'",
@@ -78,6 +92,7 @@ async def _make_request_with_retries(client, url, max_retries=3):
                 'attempt': attempt
             }
         except Exception as error:
+            logger.exception(f"Unexpected error occurred while requesting {url}:")
             return {
                 'case': 'Unexpected exception',
                 'message': f"Unexpected error occurred while requesting '{url}'",
