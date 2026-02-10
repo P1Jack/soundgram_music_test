@@ -92,8 +92,6 @@ def _normalize_playlist_data(playlist_data: dict, playlist_type) -> dict:
 
 
 def _generate_track_iframe(track_data: dict, width: int = 614, height: int = 244) -> str:
-    logger.debug("Started generating iframe")
-
     track_id = track_data.get('id') or track_data.get('realId')
     if not track_id:
         raise ValueError("Track ID was not found")
@@ -129,5 +127,4 @@ def _generate_track_iframe(track_data: dict, width: int = 614, height: int = 244
 
     iframe_html = f'<iframe frameborder="0" allow="clipboard-write" style="border:none;width:{width}px;height:{height}px;" width="{width}" height="{height}" src="{iframe_url}"></iframe>'
 
-    logger.debug("Successful iframe generation")
     return iframe_html
