@@ -31,7 +31,7 @@ async def request_data(url_type: str, **params) -> dict:
 
 
 async def _make_request_with_retries(client, url, max_retries=3):
-    logger.debug(f"Data requesting with retries from '{url}' started")
+    logger.info(f"Data requesting with retries from '{url}' started")
 
     for attempt in range(1, max_retries + 2):
         logger.debug(f"Attempt #{attempt} started")
