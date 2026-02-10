@@ -1,10 +1,14 @@
 import re
-import traceback
+import logging
 
 import modules.YMAPI_requester as YMAPI_requester
 
 
+logger = logging.getLogger(__name__)
+
+
 async def parse_link(playlist_link: str) -> dict:
+    logger.debug(f"Started parsing link {playlist_link}")
     old_format_regex = r'https://music\.yandex\.ru/users/([^/]+)/playlists/([^/?]+)'
     new_format_regex = r'https://music\.yandex\.ru/playlists/([^/?]+)'
 
@@ -18,19 +22,18 @@ async def parse_link(playlist_link: str) -> dict:
             url_type = 'new'
             response = await YMAPI_requester.request_data('new', lk_id=match_new.group(1))
         else:
+            logger.debug(f"Link {playlist_link} is invalid")
             return {
                 'case': 'Invalid link',
                 'message': f"The link '{playlist_link}' doesn't match any pattern. Please send valid link"
             }
 
-    if response['case'] == 'Unsuccessful request':
-        if response['response'].get('message', "") == "Not Found":
-            return {
-                'case': 'Not found',
-                'message': 'Playlist was not found. Please make sure link is right'
-            }
-    if response['case'] != 'Successful request':
-        #  logging
+    if response['case'] == 'Not Found':
+        return {
+            'case': 'Not found',
+            'message': 'Playlist was not found. Please make sure link is right'
+        }
+    elif response['case'] != 'Successful request':
         return {
             'case': 'YMAPI exception',
             'message': 'Request to YandexMusic API was unsuccessful. Please try again later'
@@ -39,8 +42,8 @@ async def parse_link(playlist_link: str) -> dict:
     playlist_data = response["data"]
     try:
         normalized_playlist_data = _normalize_playlist_data(playlist_data, url_type)
-    except Exception as e:
-        print(f"Unexpected error '{e}' occured while normalizing playlist data")
+    except Exception:
+        logger.exception(f"Unexpected error occurred while normalizing playlist")
         return {
             'case': 'normalization error',
             'message': 'Playlist parsing was unsuccessful. Probably YM response structure changed.'
@@ -52,6 +55,7 @@ async def parse_link(playlist_link: str) -> dict:
 
 
 def _normalize_playlist_data(playlist_data: dict, playlist_type) -> dict:
+    logger.debug("Started playlist normalization")
     playlist_data = playlist_data["playlist" if playlist_type == 'old' else "result"]
 
     normalized_playlist_data = {
@@ -70,7 +74,7 @@ def _normalize_playlist_data(playlist_data: dict, playlist_type) -> dict:
         try:
             iframe = _generate_track_iframe(track)
         except ValueError:
-            # logging
+            logger.exception(f"iframe generation failed with exception:")
             iframe = ''
 
         artists = []
@@ -83,10 +87,13 @@ def _normalize_playlist_data(playlist_data: dict, playlist_type) -> dict:
         tracks.append(normalized_track)
 
     normalized_playlist_data["tracks"] = tracks
+    logger.debug("Successful playlist normalization. Exiting the function")
     return normalized_playlist_data
 
 
 def _generate_track_iframe(track_data: dict, width: int = 614, height: int = 244) -> str:
+    logger.debug("Started generating iframe")
+
     track_id = track_data.get('id') or track_data.get('realId')
     if not track_id:
         raise ValueError("Track ID was not found")
@@ -122,4 +129,5 @@ def _generate_track_iframe(track_data: dict, width: int = 614, height: int = 244
 
     iframe_html = f'<iframe frameborder="0" allow="clipboard-write" style="border:none;width:{width}px;height:{height}px;" width="{width}" height="{height}" src="{iframe_url}"></iframe>'
 
+    logger.debug("Successful iframe generation")
     return iframe_html

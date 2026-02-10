@@ -31,7 +31,7 @@ async def request_data(url_type: str, **params) -> dict:
 
 
 async def _make_request_with_retries(client, url, max_retries=3):
-    logger.info(f"Data requesting with retries from '{url}' started")
+    logger.debug(f"Started data requesting with {max_retries} retries from '{url}'")
 
     for attempt in range(1, max_retries + 2):
         logger.debug(f"Attempt #{attempt} started")
@@ -67,7 +67,13 @@ async def _make_request_with_retries(client, url, max_retries=3):
                             'status_code': response.status_code
                         }
             else:
-                logger.warning(f"Unsuccessful request to {url}. Response: {response.json()}")
+                logger.warning(f"Unsuccessful request to {url}. Response: {response.text}")
+                if response.get('message', "") == "Not Found":
+                    return {
+                        'case': 'Not found',
+                        'message': 'Playlist was not found'
+                    }
+
                 return {
                     'case': 'Unsuccessful request',
                     'response': response.json(),
