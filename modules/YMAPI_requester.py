@@ -9,12 +9,14 @@ import modules.json_manager as json_manager
 
 logger = logging.getLogger(__name__)
 
+module_config = json_manager.get_YMAPI_requester_config()
+
 
 async def request_data(url_type: str, **params) -> dict:
     headers = {
         'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 OPR/126.0.0.0',
-        'cookie': json_manager.get_session_id()
+        'cookie': module_config["session_id"]
     }
 
     if url_type == 'old':
@@ -30,7 +32,7 @@ async def request_data(url_type: str, **params) -> dict:
         return await _make_request_with_retries(client, url)
 
 
-async def _make_request_with_retries(client, url, max_retries=3):
+async def _make_request_with_retries(client, url, max_retries=module_config["max_retries"]):
     logger.debug(f"Started data requesting with {max_retries} retries from '{url}'")
 
     for attempt in range(1, max_retries + 2):

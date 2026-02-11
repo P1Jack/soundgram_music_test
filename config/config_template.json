@@ -1,5 +1,6 @@
 {
   "YMAPI": {
-    "session_id": "Session_id=..."
+    "session_id": "Session_id=...",
+    "max_retries": 3
   }
 }

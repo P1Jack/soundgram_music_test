@@ -1,9 +1,9 @@
 import json
 
 
-def get_session_id():
+def get_YMAPI_requester_config():
     with open('config/config.json', 'r') as read_file:
-        session_id = json.load(read_file)["YMAPI"]["session_id"]
+        session_id = json.load(read_file)["YMAPI"]
 
     return session_id
 
