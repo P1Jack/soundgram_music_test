@@ -120,13 +120,6 @@ async def root():
     }
 
 
-@app.get('/test')
-async def test():
-    logger.debug("Test debug")
-    logger.info("Test info")
-    return {"test": "ok"}
-
-
 @app.get('/get_playlist_info/{playlist_link:path}')
 async def get_playlist_info(playlist_link: str):
     logger.debug(f"Getting playlist info at '{playlist_link}'")
@@ -142,18 +135,20 @@ async def get_playlist_info(playlist_link: str):
             content=json_parser_response,
             media_type="application/json; charset=utf-8"
         )
+
     elif case == 'Invalid link' or case == 'Empty playlist':
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=parser_response['message']
-        )
+        status_code = status.HTTP_400_BAD_REQUEST,
+
     elif case == 'Playlist not found':
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=parser_response['message']
-        )
+        status_code = status.HTTP_404_NOT_FOUND,
+
     else:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=parser_response['message']
+        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
+
+    raise HTTPException(
+            status_code=status_code,
+            detail={
+                'message': parser_response['message'],
+                'case': case
+            }
         )

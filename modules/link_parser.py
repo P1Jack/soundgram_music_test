@@ -47,7 +47,7 @@ async def parse_link(playlist_link: str) -> dict:
         normalized_playlist_data = _normalize_playlist_data(playlist_data, url_type)
 
     except Exception:
-        logger.critical(f"Unexpected error occurred while normalizing playlist")
+        logger.critical(f"Unexpected error occurred while normalizing playlist at '{playlist_link}'")
         logger.exception("Error info above:")
 
         return {
