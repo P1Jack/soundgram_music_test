@@ -58,6 +58,7 @@ def setup_logging():
         "httpcore.http11",
         "httpx",
         "httpx._client",
+        "watchfiles.main"
     ]
 
     for logger_name in noisy_loggers:
@@ -131,7 +132,7 @@ async def get_playlist_info(playlist_link: str):
     logger.debug(f"Getting playlist info at '{playlist_link}'")
 
     parser_response = await link_parser.parse_link(playlist_link)
-    logger.debug(f"Successfully got playlist info at '{playlist_link}'")
+    logger.debug(f"Successfully got parser response for '{playlist_link}'")
 
     json_parser_response = json.dumps(parser_response, ensure_ascii=False, indent=4)
 
