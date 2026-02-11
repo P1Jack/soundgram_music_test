@@ -1,1 +1,0 @@
-В iframe можно добавить fallback text
