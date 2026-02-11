@@ -146,7 +146,7 @@ async def get_playlist_info(playlist_link: str):
         status_code = status.HTTP_500_INTERNAL_SERVER_ERROR,
 
     raise HTTPException(
-            status_code=status_code,
+            status_code=status_code[0],
             detail={
                 'message': parser_response['message'],
                 'case': case
