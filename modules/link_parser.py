@@ -16,11 +16,13 @@ async def parse_link(playlist_link: str) -> dict:
     if match_old:
         url_type = 'old'
         response = await YMAPI_requester.request_data(url_type, owner=match_old.group(1), kinds=match_old.group(2))
+
     else:
         match_new = re.match(new_format_regex, playlist_link)
         if match_new:
             url_type = 'new'
             response = await YMAPI_requester.request_data('new', lk_id=match_new.group(1))
+
         else:
             logger.debug(f"Link {playlist_link} is invalid")
             return {
@@ -33,6 +35,7 @@ async def parse_link(playlist_link: str) -> dict:
             'case': 'Not found',
             'message': 'Playlist was not found. Please make sure link is right'
         }
+
     elif response['case'] != 'Successful request':
         return {
             'case': 'YMAPI exception',
@@ -42,14 +45,21 @@ async def parse_link(playlist_link: str) -> dict:
     playlist_data = response["data"]
     try:
         normalized_playlist_data = _normalize_playlist_data(playlist_data, url_type)
+
     except Exception:
-        logger.exception(f"Unexpected error occurred while normalizing playlist")
+        logger.critical(f"Unexpected error occurred while normalizing playlist")
+        logger.exception("Error info above:")
+
         return {
-            'case': 'normalization error',
-            'message': 'Playlist parsing was unsuccessful. Probably YM response structure changed.'
+            'case': 'Normalization error',
+            'message': 'Playlist parsing was unsuccessful. Probably YM response structure changed'
         }
 
-    #  проверить нормализованный плейлист
+    if not normalized_playlist_data["tracks"]:
+        return {
+            'case': 'Empty playlist',
+            'message': 'Playlist has no tracks in it'
+        }
 
     return normalized_playlist_data
 
