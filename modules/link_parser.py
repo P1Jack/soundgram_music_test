@@ -59,7 +59,9 @@ def _normalize_playlist_data(playlist_data: dict, playlist_type) -> dict:
     playlist_data = playlist_data["playlist" if playlist_type == 'old' else "result"]
 
     normalized_playlist_data = {
-        "playlist_name": playlist_data.get("title", "")
+        "title": playlist_data.get("title", ""),
+        "kind": playlist_data.get("kind", ""),
+        "owner": playlist_data.get("owner", {})
     }
     tracks = []
 

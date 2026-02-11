@@ -70,7 +70,7 @@ async def _make_request_with_retries(client, url, max_retries=3):
                 logger.warning(f"Unsuccessful request to {url}. Response: {response.text}")
                 if response.json().get('message', "") == "Not Found":
                     return {
-                        'case': 'Not found',
+                        'case': 'Not Found',
                         'message': 'Playlist was not found'
                     }
 
