@@ -69,8 +69,8 @@ async def _make_request_with_retries(client, url, max_retries=module_config["max
                             'status_code': response.status_code
                         }
             else:
-                logger.warning(f"Unsuccessful request to {url}. Response: {response.text}")
-                if response.json().get('message', "") == "Not Found":
+                logger.warning(f"Unsuccessful request to {url}. Response: {response.text[:500]}")
+                if response.json().get('message', '') == "Not Found" or response.json().get('error', {}).get('name', '') == 'playlist-not-found':
                     return {
                         'case': 'Not Found',
                         'message': 'Playlist was not found'

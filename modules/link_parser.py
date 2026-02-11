@@ -32,7 +32,7 @@ async def parse_link(playlist_link: str) -> dict:
 
     if response['case'] == 'Not Found':
         return {
-            'case': 'Not found',
+            'case': 'Playlist not found',
             'message': 'Playlist was not found. Please make sure link is right'
         }
 
@@ -61,7 +61,10 @@ async def parse_link(playlist_link: str) -> dict:
             'message': 'Playlist has no tracks in it'
         }
 
-    return normalized_playlist_data
+    return {
+        'case': 'Successful parsing',
+        'playlist': normalized_playlist_data
+    }
 
 
 def _normalize_playlist_data(playlist_data: dict, playlist_type) -> dict:

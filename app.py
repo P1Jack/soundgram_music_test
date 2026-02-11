@@ -5,7 +5,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response, HTTPException, status
 
 import modules.link_parser as link_parser
 
@@ -134,9 +134,26 @@ async def get_playlist_info(playlist_link: str):
     parser_response = await link_parser.parse_link(playlist_link)
     logger.debug(f"Successfully got parser response for '{playlist_link}'")
 
-    json_parser_response = json.dumps(parser_response, ensure_ascii=False, indent=4)
+    case = parser_response['case']
 
-    return Response(
-        content=json_parser_response,
-        media_type="application/json; charset=utf-8"
-    )
+    if case == 'Successful parsing':
+        json_parser_response = json.dumps(parser_response["playlist"], ensure_ascii=False, indent=4)
+        return Response(
+            content=json_parser_response,
+            media_type="application/json; charset=utf-8"
+        )
+    elif case == 'Invalid link' or case == 'Empty playlist':
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=parser_response['message']
+        )
+    elif case == 'Playlist not found':
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=parser_response['message']
+        )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=parser_response['message']
+        )
