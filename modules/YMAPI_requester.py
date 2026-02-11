@@ -39,7 +39,7 @@ async def _make_request_with_retries(client, url, max_retries=module_config["max
         logger.debug(f"Attempt #{attempt} started")
         try:
             if attempt > 1:
-                await asyncio.sleep(10)
+                await asyncio.sleep(module_config["between_attempt_sleep_time"])
                 logger.debug("Retrying")
 
             response = await client.get(url)
